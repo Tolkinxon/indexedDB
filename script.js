@@ -1,14 +1,37 @@
-const elForm = document.querySelector('.js-form');
-const elInput = document.querySelector('.js-input');
+ const elInput = document.querySelector('.js-input');
 const elList = document.querySelector('.js-list');
 
 const nameIndexedDB = 'indexedDB';
-let request = window.indexedDB.open(nameIndexedDB, 4); 
+let request = window.indexedDB.open(nameIndexedDB, 5); 
 let db;
+
+function render() {
+    let transaction = db.transaction('table', 'readonly');
+    let store = transaction.objectStore('table');
+    let files = store.getAll();
+
+    files.onsuccess = (res) => {
+        res = res.srcElement.result;
+        
+        
+        res.forEach(({file_name, content}) => {
+            if(content.startsWith('data:image')){
+                const li = document.createElement('li');
+                const img = document.createElement('img');
+                img.src = content; 
+                img.style.width = '200px'
+                li.append(img)
+                elList.append(li)
+            }
+        });
+        
+    }
+    
+}
 
 request.onsuccess = (evt) => {
     db = evt.target.result;
-    // console.log("Database created successfully!", db);
+    return render()
 };
 
 request.onerror = (err) => {
@@ -20,21 +43,28 @@ request.onupgradeneeded = (evt) => {
     if(!(db.objectStoreNames.contains('table'))) db.createObjectStore('table', {keyPath: 'id', autoIncrement: true}) 
 };
 
-elForm.addEventListener('submit', (evt) => {
+elInput.addEventListener('change', (evt) => {
     evt.preventDefault();
-    let file = elInput.files[0];
+    let file = evt.target.files[0];
     try{
         if(!file) throw new Error('File kiritish majburiy!'); 
-        let transaction = db.transaction('table', 'readwrite');
-        let store = transaction.objectStore('table');
-
         let reader = new FileReader();
         reader.onload = () => {
-            file = {
-                file_name: file.name,
-                content: reader.result
-            } ; 
-            store.add(file);                      
+            if(db && db.objectStoreNames.contains('table')){
+                let transaction = db.transaction('table', 'readwrite');
+                let store = transaction.objectStore('table');
+
+                if(store && transaction) {
+                    file = {
+                        file_name: file.name,
+                        content: reader.result
+                    } ; 
+                    store.add(file);  
+                    console.log('Fiile created successfully!');
+                    render();
+                    
+                } 
+            }
         }
         reader.readAsDataURL(file);
         
