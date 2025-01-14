@@ -9,46 +9,51 @@ function render() {
     let transaction = db.transaction('table', 'readonly');
     let store = transaction.objectStore('table');
     let files = store.getAll();
+    let keys = store.getAllKeys();
+
+
+
+    
 
     files.onsuccess = (res) => {
-        res = res.srcElement.result;
+        keys.onsuccess = () => {
+            res = res.srcElement.result;
 
-        // console.log(res.srcElement.result.id);
-        
-        
-        elList.innerHTML = '';
-        res.forEach(({file_name, content, file_id}) => {
-            const li = document.createElement('li');
-            if(content.startsWith('data:image')){
-
-                const btn = document.createElement('button');
-                btn.textContent = 'x'
-                btn.dataset.id = file_id;
-                btn.classList.add('delete')
-                li.append(btn)
-                
-                const img = document.createElement('img');
-                img.src = content; 
-                li.append(img)
-                elList.append(li)
-            }
-            else if(content.startsWith('data:video')){
-                const video = document.createElement('video');
-                video.controls = true;
-                video.autoplay = true;
-                video.src = content; 
-                li.append(img)
-                elList.append(li)
-            }
-            else {
-                const a = document.createElement('a');
-                a.href = content; 
-                a.download = file_name;
-                a.textContent = 'Download file ' + file_name;
-                li.append(a)
-                elList.append(li)
-            }
-        });
+            elList.innerHTML = '';
+            res.forEach(({file_name, content, file_id}, idx) => {
+                const li = document.createElement('li');
+                if(content.startsWith('data:image')){
+    
+                    const btn = document.createElement('button');
+                    btn.textContent = 'x'
+                    btn.dataset.id = keys.result[idx];
+                    btn.classList.add('delete')
+                    li.append(btn)
+                    
+                    const img = document.createElement('img');
+                    img.src = content; 
+                    li.append(img)
+                    elList.append(li)
+                }
+                else if(content.startsWith('data:video')){
+                    const video = document.createElement('video');
+                    video.controls = true;
+                    video.autoplay = true;
+                    video.src = content; 
+                    li.append(img)
+                    elList.append(li)
+                }
+                else {
+                    const a = document.createElement('a');
+                    a.href = content; 
+                    a.download = file_name;
+                    a.textContent = 'Download file ' + file_name;
+                    li.append(a)
+                    elList.append(li)
+                }
+            });
+        }
+    
         
     }
     
@@ -81,7 +86,6 @@ elInput.addEventListener('change', (evt) => {
 
                 if(store && transaction) {
                     file = {
-                        file_id: new Date().getTime(),
                         file_name: file.name,
                         content: reader.result
                     } ; 
@@ -108,7 +112,7 @@ elList.addEventListener('click', (evt)=>{
             let store = transaction.objectStore('table');
 
             if(store && transaction) {
-                store.delete(8);
+                store.delete(id);
                 
                 console.log('File deleted successfully!');
                 render();
