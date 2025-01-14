@@ -11,13 +11,10 @@ function render() {
     let files = store.getAll();
     let keys = store.getAllKeys();
 
-
-
-    
-
     files.onsuccess = (res) => {
         keys.onsuccess = () => {
             res = res.srcElement.result;
+            keyArr = keys.result;
 
             elList.innerHTML = '';
             res.forEach(({file_name, content, file_id}, idx) => {
@@ -26,7 +23,7 @@ function render() {
     
                     const btn = document.createElement('button');
                     btn.textContent = 'x'
-                    btn.dataset.id = keys.result[idx];
+                    btn.dataset.id = keyArr[idx];
                     btn.classList.add('delete')
                     li.append(btn)
                     
@@ -112,7 +109,8 @@ elList.addEventListener('click', (evt)=>{
             let store = transaction.objectStore('table');
 
             if(store && transaction) {
-                store.delete(id);
+                
+                store.delete(Number(id));
                 
                 console.log('File deleted successfully!');
                 render();
