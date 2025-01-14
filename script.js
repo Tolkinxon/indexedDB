@@ -71,6 +71,7 @@ elInput.addEventListener('change', (evt) => {
 
                 if(store && transaction) {
                     file = {
+                        file_id: new Date().getTime(),
                         file_name: file.name,
                         content: reader.result
                     } ; 
@@ -79,6 +80,8 @@ elInput.addEventListener('change', (evt) => {
                       
                     console.log('Fiile created successfully!');
                     render();
+
+                    
                     
                 } 
             }
